@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏨 Sklad Nazorati</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:#f8fafc;max-width:480px;margin:0 auto;min-height:100vh}
+.header{background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:20px;color:#fff}
+.header h1{font-size:20px;font-weight:900}
+.header .date{font-size:11px;opacity:.6;margin-bottom:4px}
+.stats{display:flex;gap:10px;margin-top:14px}
+.stat{flex:1;background:rgba(255,255,255,.1);border-radius:12px;padding:10px;text-align:center}
+.stat .val{font-size:20px;font-weight:900}
+.stat .lbl{font-size:10px;opacity:.7;margin-top:2px}
+.tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0}
+.tab{flex:1;padding:12px 4px;border:none;border-bottom:3px solid transparent;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:#94a3b8}
+.tab.active{border-bottom-color:#3b82f6;color:#3b82f6}
+.content{padding:16px}
+.btn{width:100%;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;margin-bottom:10px}
+.btn-blue{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff}
+.btn-green{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
+.btn-red{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+.btn-outline{background:#fff;border:2px dashed #bfdbfe!important;color:#3b82f6}
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:8px;border:1px solid #e2e8f0}
+.card.green{border-left:4px solid #22c55e}
+.card.yellow{border-left:4px solid #f59e0b}
+.card.red{border-left:4px solid #ef4444}
+.card-title{font-size:15px;font-weight:800;color:#1e293b}
+.card-sub{font-size:11px;color:#94a3b8;margin-top:2px}
+.mini-stats{display:flex;gap:8px;margin-top:10px}
+.mini-stat{flex:1;border-radius:10px;padding:8px;text-align:center}
+.mini-stat .v{font-size:17px;font-weight:900}
+.mini-stat .l{font-size:10px;color:#94a3b8}
+.inp{width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e2e8f0;font-size:14px;font-family:'Nunito',sans-serif;outline:none;background:#fff;color:#1e293b;margin-bottom:12px}
+.label{font-size:12px;color:#64748b;font-weight:700;display:block;margin-bottom:6px}
+.row{display:flex;gap:8px}
+.row>div{flex:1}
+.log-item{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.log-item.kirim{border:1px solid #bbf7d0;border-left:4px solid #22c55e}
+.log-item.chiqim{border:1px solid #fecdd3;border-left:4px solid #ef4444}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.empty{text-align:center;padding:50px 20px;color:#94a3b8}
+.empty .icon{font-size:40px;margin-bottom:10px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:380px}
+.toggle{display:flex;background:#e2e8f0;border-radius:12px;padding:4px;margin-bottom:16px}
+.toggle button{flex:1;padding:10px;border-radius:10px;border:none;background:transparent;font-size:13px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:#94a3b8}
+.toggle button.active{background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.prod-select{max-height:200px;overflow-y:auto;margin-bottom:14px}
+.prod-option{padding:11px 14px;border-radius:12px;cursor:pointer;border:2px solid #e2e8f0;background:#fff;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.prod-option.selected{border-color:#3b82f6;background:#eff6ff}
+.loading{text-align:center;padding:60px 20px;color:#94a3b8;font-size:14px;font-weight:700}
+.sep{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sep span{font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+.sep hr{flex:1;border:none;border-top:1px solid #e2e8f0}
+select.inp{cursor:pointer}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="loading">⏳ Yuklanmoqda...</div>
+</div>
+
+<script>
+// Firebase config - bepul demo
+const firebaseConfig = {
+  apiKey: "AIzaSyDemo-ReplaceWithYours",
+  authDomain: "sklad-demo.firebaseapp.com",
+  projectId: "sklad-demo-hotel",
+  storageBucket: "sklad-demo-hotel.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef"
+};
+
+// LocalStorage asosida ishlaydigan oddiy DB (Firebase o'rniga)
+const DB = {
+  get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null') }catch{return null} },
+  set(key,val){ localStorage.setItem(key,JSON.stringify(val)) }
+};
+
+let products = DB.get('products') || [];
+let logs = DB.get('logs') || [];
+let currentTab = 'home';
+let selectedProduct = null;
+let logType = 'kirim';
+
+function save(){
+  DB.set('products', products);
+  DB.set('logs', logs);
+}
+
+function getBalance(pid){
+  return logs.filter(l=>l.productId===pid).reduce((s,l)=>l.type==='kirim'?s+l.qty:s-l.qty,0);
+}
+
+function getStatus(p){
+  const b=getBalance(p.id);
+  if(b<=0) return 'red';
+  if(p.minQty && b<=p.minQty) return 'yellow';
+  return 'green';
+}
+
+const statusIcon={green:'🟢',yellow:'🟡',red:'🔴'};
+const statusLabel={green:'Yetarli',yellow:'Kamaymoqda',red:'Tugab qoldi'};
+const statusColor={green:'#16a34a',yellow:'#b45309',red:'#dc2626'};
+
+function fmt(d){
+  if(!d) return '';
+  return new Date(d).toLocaleDateString('uz-UZ',{day:'2-digit',month:'short'});
+}
+
+function today(){
+  return new Date().toISOString().split('T')[0];
+}
+
+function nowStr(){
+  return new Date().toLocaleDateString('uz-UZ',{weekday:'long',day:'numeric',month:'long'});
+}
+
+function render(){
+  const redC=products.filter(p=>getStatus(p)==='red').length;
+  const yelC=products.filter(p=>getStatus(p)==='yellow').length;
+
+  if(currentTab==='home'){
+    document.getElementById('app').innerHTML=`
+      <div class="header">
+        <div class="date">${nowStr()}</div>
+        <h1>🏨 Sklad Nazorati</h1>
+        <div class="stats">
+          <div class="stat"><div class="val" style="color:#bfdbfe">${products.length}</div><div class="lbl">📦 Mahsulot</div></div>
+          <div class="stat"><div class="val" style="color:#fca5a5">${redC}</div><div class="lbl">🔴 Tugagan</div></div>
+          <div class="stat"><div class="val" style="color:#fde68a">${yelC}</div><div class="lbl">🟡 Kam</div></div>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="setTab('home')">🏠 Bosh</button>
+        <button class="tab" onclick="setTab('log')">📝 Yozish</button>
+        <button class="tab" onclick="setTab('products')">📦 Mahsulot</button>
+        <button class="tab" onclick="setTab('history')">📋 Tarix</button>
+      </div>
+      <div class="content">
+        ${redC>0||yelC>0?`
+        <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:10px">⚠️ Diqqat talab qiluvchilar</div>
+        ${products.filter(p=>getStatus(p)!=='green').map(p=>`
+          <div class="card ${getStatus(p)}" onclick="openLog('${p.id}','kirim')" style="cursor:pointer;display:flex;align-items:center;gap:12px">
+            <div style="font-size:22px">${statusIcon[getStatus(p)]}</div>
+            <div style="flex:1">
+              <div class="card-title">${p.name}</div>
+              <div class="card-sub" style="color:${statusColor[getStatus(p)]};font-weight:700">${statusLabel[getStatus(p)]} · Qoldiq: ${getBalance(p.id)} ${p.unit}</div>
+            </div>
+            <div style="font-size:12px;color:#94a3b8">Kirim →</div>
+          </div>`).join('')}`:''}
+        ${products.length===0?`
+        <div class="empty">
+          <div class="icon">📦</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:6px">Mahsulot yo'q</div>
+          <div style="font-size:12px">Avval mahsulot qo'shing</div>
+          <button class="btn btn-blue" style="margin-top:14px;width:auto;padding:10px 20px" onclick="setTab('products')">+ Mahsulot qo'shish</button>
+        </div>`:''}
+        ${products.length>0&&redC===0&&yelC===0?`
+        <div class="empty">
+          <div class="icon">✅</div>
+          <div style="font-size:14px;font-weight:700">Hamma narsa yaxshi!</div>
+        </div>`:''}
+      </div>`;
+  }
+
+  else if(currentTab==='log'){
+    document.getElementById('app').innerHTML=`
+      <div class="header" style="background:linear-gradient(135deg,${logType==='kirim'?'#16a34a,#15803d':'#dc2626,#b91c1c'})">
+        <div class="date">${nowStr()}</div>
+        <h1>${logType==='kirim'?'📥 Kirim yozish':'📤 Chiqim yozish'}</h1>
+      </div>
+      <div class="tabs">
+        <button class="tab" onclick="setTab('home')">🏠 Bosh</button>
+        <button class="tab active" onclick="setTab('log')">📝 Yozish</button>
+        <button class="tab" onclick="setTab('products')">📦 Mahsulot</button>
+        <button class="tab" onclick="setTab('history')">📋 Tarix</button>
+      </div>
+      <div class="content">
+        <div class="toggle">
+          <button class="${logType==='kirim'?'active':''}" style="${logType==='kirim'?'color:#16a34a':''}" onclick="logType='kirim';render()">📥 Kirim</button>
+          <button class="${logType==='chiqim'?'active':''}" style="${logType==='chiqim'?'color:#dc2626':''}" onclick="logType='chiqim';render()">📤 Chiqim</button>
+        </div>
+        <div>
+          <label class="label">MAHSULOT TANLANG</label>
+          <div class="prod-select">
+            ${products.length===0?`<div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px">Mahsulot yo'q — avval qo'shing</div>`:''}
+            ${products.map(p=>`
+              <div class="prod-option ${selectedProduct&&selectedProduct.id===p.id?'selected':''}" onclick="selectProduct('${p.id}')">
+                <div style="font-size:16px">${statusIcon[getStatus(p)]}</div>
+                <div style="flex:1">
+                  <div style="font-size:14px;font-weight:800;color:#1e293b">${p.name}</div>
+                  <div style="font-size:11px;color:#94a3b8">Qoldiq: ${getBalance(p.id)} ${p.unit}</div>
+                </div>
+                ${selectedProduct&&selectedProduct.id===p.id?'<div style="color:#3b82f6;font-size:16px">✓</div>':''}
+              </div>`).join('')}
+          </div>
+          ${selectedProduct?`
+          <div class="card">
+            <label class="label">SANA</label>
+            <input type="date" class="inp" id="logDate" value="${today()}">
+            <label class="label">MIQDOR (${selectedProduct.unit})</label>
+            <input type="number" class="inp" id="logQty" placeholder="0" style="font-size:20px;font-weight:900;text-align:center" min="1">
+            <label class="label">IZOH (ixtiyoriy)</label>
+            <input type="text" class="inp" id="logNote" placeholder="Masalan: Yetkazib beruvchi...">
+            <button class="btn ${logType==='kirim'?'btn-green':'btn-red'}" onclick="saveLog()">${logType==='kirim'?'📥 Kirimni saqlash':'📤 Chiqimni saqlash'}</button>
+          </div>`:''}
+        </div>
+      </div>`;
+  }
+
+  else if(currentTab==='products'){
+    document.getElementById('app').innerHTML=`
+      <div class="header" style="background:linear-gradient(135deg,#1e40af,#2563eb)">
+        <div class="date">${nowStr()}</div>
+        <h1>📦 Mahsulotlar</h1>
+      </div>
+      <div class="tabs">
+        <button class="tab" onclick="setTab('home')">🏠 Bosh</button>
+        <button class="tab" onclick="setTab('log')">📝 Yozish</button>
+        <button class="tab active" onclick="setTab('products')">📦 Mahsulot</button>
+        <button class="tab" onclick="setTab('history')">📋 Tarix</button>
+      </div>
+      <div class="content">
+        ${products.map(p=>{
+          const b=getBalance(p.id);
+          const st=getStatus(p);
+          const bg={green:'#f0fdf4',yellow:'#fffbeb',red:'#fff1f2'};
+          return `<div class="card ${st}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div>
+                <div class="card-title">${p.name}</div>
+                <div class="card-sub">${p.category}</div>
+              </div>
+              <button onclick="deleteProduct('${p.id}')" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:18px">🗑</button>
+            </div>
+            <div class="mini-stats">
+              <div class="mini-stat" style="background:${bg[st]}">
+                <div class="l">Qoldiq</div>
+                <div class="v" style="color:${statusColor[st]}">${b}</div>
+                <div class="l">${p.unit}</div>
+              </div>
+              <div class="mini-stat" style="background:#f8fafc">
+                <div class="l">Minimum</div>
+                <div class="v" style="color:#64748b">${p.minQty||'—'}</div>
+                <div class="l">${p.unit}</div>
+              </div>
+              <div class="mini-stat" style="background:${bg[st]}">
+                <div class="l">Holat</div>
+                <div class="v">${statusIcon[st]}</div>
+                <div class="l" style="color:${statusColor[st]};font-weight:700">${statusLabel[st]}</div>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+        <button class="btn btn-outline" onclick="showAddProduct()">+ Yangi mahsulot qo'shish</button>
+      </div>`;
+  }
+
+  else if(currentTab==='history'){
+    const grouped={};
+    logs.forEach(l=>{
+      if(!grouped[l.date]) grouped[l.date]=[];
+      grouped[l.date].push(l);
+    });
+    const dates=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
+
+    document.getElementById('app').innerHTML=`
+      <div class="header" style="background:linear-gradient(135deg,#5b21b6,#7c3aed)">
+        <div class="date">${nowStr()}</div>
+        <h1>📋 Kirim-Chiqim Tarixi</h1>
+      </div>
+      <div class="tabs">
+        <button class="tab" onclick="setTab('home')">🏠 Bosh</button>
+        <button class="tab" onclick="setTab('log')">📝 Yozish</button>
+        <button class="tab" onclick="setTab('products')">📦 Mahsulot</button>
+        <button class="tab active" onclick="setTab('history')">📋 Tarix</button>
+      </div>
+      <div class="content">
+        ${dates.length===0?`<div class="empty"><div class="icon">📭</div><div style="font-size:14px;font-weight:700">Hali yozuv yo'q</div></div>`:''}
+        ${dates.map(d=>`
+          <div class="sep"><span>${fmt(d)}</span><hr><span style="color:#94a3b8;font-weight:600">${grouped[d].length} ta</span></div>
+          ${grouped[d].map(l=>`
+            <div class="log-item ${l.type}">
+              <div style="font-size:20px">${l.type==='kirim'?'📥':'📤'}</div>
+              <div style="flex:1">
+                <div style="font-size:14px;font-weight:800;color:#1e293b">${l.productName}</div>
+                ${l.note?`<div style="font-size:11px;color:#94a3b8">${l.note}</div>`:''}
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:16px;font-weight:900;color:${l.type==='kirim'?'#16a34a':'#dc2626'}">${l.type==='kirim'?'+':'-'}${l.qty} ${l.unit}</div>
+              </div>
+            </div>`).join('')}`).join('')}
+      </div>`;
+  }
+}
+
+function setTab(t){ currentTab=t; render(); }
+
+function selectProduct(id){
+  selectedProduct=products.find(p=>p.id===id);
+  render();
+}
+
+function openLog(id, type){
+  selectedProduct=products.find(p=>p.id===id);
+  logType=type;
+  currentTab='log';
+  render();
+}
+
+function saveLog(){
+  const qty=Number(document.getElementById('logQty').value);
+  const date=document.getElementById('logDate').value;
+  const note=document.getElementById('logNote').value;
+  if(!qty||qty<=0) return alert('Miqdor kiriting!');
+  logs.unshift({id:Date.now(),productId:selectedProduct.id,productName:selectedProduct.name,type:logType,qty,unit:selectedProduct.unit,note,date,createdAt:new Date().toISOString()});
+  save();
+  selectedProduct=null;
+  currentTab='home';
+  render();
+}
+
+function showAddProduct(){
+  document.getElementById('app').insertAdjacentHTML('beforeend',`
+    <div class="modal" id="addModal">
+      <div class="modal-box">
+        <div style="font-size:17px;font-weight:900;color:#1e293b;margin-bottom:16px">+ Yangi mahsulot</div>
+        <label class="label">MAHSULOT NOMI *</label>
+        <input type="text" class="inp" id="pName" placeholder="Masalan: Shampun">
+        <label class="label">KATEGORIYA</label>
+        <select class="inp" id="pCat">
+          <option>🍎 Oziq-ovqat</option>
+          <option>🧴 Gigiyena</option>
+          <option>🧹 Tozalash</option>
+          <option>🍽 Idish</option>
+          <option>🔧 Boshqa</option>
+        </select>
+        <div class="row">
+          <div>
+            <label class="label">O'LCHOV</label>
+            <select class="inp" id="pUnit">
+              <option>dona</option><option>kg</option><option>litr</option><option>rulo</option><option>paket</option><option>quti</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">MIN MIQDOR 🟡</label>
+            <input type="number" class="inp" id="pMin" placeholder="0" min="0">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button class="btn" style="flex:1;background:#f1f5f9;color:#64748b" onclick="document.getElementById('addModal').remove()">Bekor</button>
+          <button class="btn btn-blue" style="flex:2" onclick="addProduct()">✓ Qo'shish</button>
+        </div>
+      </div>
+    </div>`);
+}
+
+function addProduct(){
+  const name=document.getElementById('pName').value.trim();
+  if(!name) return alert('Nom kiriting!');
+  products.push({id:Date.now().toString(),name,category:document.getElementById('pCat').value,unit:document.getElementById('pUnit').value,minQty:Number(document.getElementById('pMin').value)||0});
+  save();
+  document.getElementById('addModal').remove();
+  render();
+}
+
+function deleteProduct(id){
+  if(!confirm('Bu mahsulotni o\'chirasizmi?')) return;
+  products=products.filter(p=>p.id!==id);
+  logs=logs.filter(l=>l.productId!==id);
+  save();
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
