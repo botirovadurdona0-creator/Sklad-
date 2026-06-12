@@ -248,7 +248,13 @@ function render() {
   }
 }
 
-function setTab(t) { currentTab = t; render(); }
+function setTab(t) {
+  if (t === "admin") {
+    const p = prompt("Admin paroli:");
+    if (p !== "durdona01") { showToast("❌ Parol noto'g'ri!"); return; }
+  }
+  currentTab = t; render();
+}
 
 function selectWorkerAction(id) {
   const w = workers.find(x => x.id == id);
