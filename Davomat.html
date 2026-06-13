@@ -3,329 +3,413 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>👷 Davomat Tizimi</title>
+<title>👷 Davomat</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',sans-serif;background:#f8fafc;max-width:480px;margin:0 auto;min-height:100vh}
+body{font-family:'Nunito',sans-serif;background:#f1f5f9;max-width:480px;margin:0 auto;min-height:100vh}
 .header{padding:20px;color:#fff}
 .header h1{font-size:20px;font-weight:900}
-.header .date{font-size:11px;opacity:.7;margin-bottom:4px}
-.tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0;position:sticky;top:0;z-index:10}
-.tab{flex:1;padding:12px 4px;border:none;border-bottom:3px solid transparent;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:#94a3b8}
-.tab.active{border-bottom-color:#6366f1;color:#6366f1}
-.content{padding:16px}
-.btn{width:100%;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;margin-bottom:10px}
+.header .sub{font-size:11px;opacity:.75;margin-bottom:4px}
+.btn{width:100%;padding:14px;border-radius:14px;border:none;font-size:15px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;margin-bottom:10px;transition:opacity .2s}
+.btn:disabled{opacity:.5;pointer-events:none}
+.btn-green{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 4px 14px rgba(34,197,94,.3)}
+.btn-red{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;box-shadow:0 4px 14px rgba(239,68,68,.3)}
 .btn-purple{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff}
-.btn-green{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
-.btn-red{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+.btn-gray{background:#e2e8f0;color:#64748b}
 .btn-outline{background:#fff;border:2px dashed #c7d2fe!important;color:#6366f1}
-.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:8px;border:1px solid #e2e8f0}
-.inp{width:100%;padding:11px 14px;border-radius:10px;border:1px solid #e2e8f0;font-size:14px;font-family:'Nunito',sans-serif;outline:none;background:#fff;color:#1e293b;margin-bottom:12px}
-.label{font-size:12px;color:#64748b;font-weight:700;display:block;margin-bottom:6px}
-.worker-card{background:#fff;border-radius:14px;padding:14px;margin-bottom:8px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
-.worker-card:hover{border-color:#6366f1;background:#f5f3ff}
-.worker-card.selected{border-color:#6366f1;background:#f5f3ff;border-width:2px}
-.avatar{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0}
-.status-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
-.status-in{background:#f0fdf4;color:#16a34a}
-.status-out{background:#f1f5f9;color:#64748b}
-.att-item{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
-.att-item.keldi{border:1px solid #bbf7d0;border-left:4px solid #22c55e}
-.att-item.ketti{border:1px solid #fecdd3;border-left:4px solid #ef4444}
-.empty{text-align:center;padding:50px 20px;color:#94a3b8}
-.empty .icon{font-size:40px;margin-bottom:10px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
-.modal-box{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:380px}
-.sep{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.sep span{font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
-.sep hr{flex:1;border:none;border-top:1px solid #e2e8f0}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:200;font-family:'Nunito',sans-serif;white-space:nowrap}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
-.stat-box{background:#fff;border-radius:12px;padding:12px;text-align:center;border:1px solid #e2e8f0}
-.stat-box .v{font-size:22px;font-weight:900}
+.btn-excel{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;font-size:13px;padding:11px}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.inp{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;font-family:'Nunito',sans-serif;outline:none;background:#fff;color:#1e293b;margin-bottom:12px}
+.inp:focus{border-color:#6366f1}
+.label{font-size:12px;color:#64748b;font-weight:700;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.avatar{border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0}
+.status-in{background:#f0fdf4;color:#16a34a;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
+.status-out{background:#f1f5f9;color:#94a3b8;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
+.att-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9}
+.att-row:last-child{border-bottom:none}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;z-index:300;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal-box{background:#fff;border-radius:24px 24px 0 0;padding:28px 20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.section-title{font-size:13px;font-weight:900;color:#1e293b;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.stat-row{display:flex;gap:8px;margin-bottom:14px}
+.stat-box{flex:1;background:#f8fafc;border-radius:12px;padding:10px;text-align:center;border:1px solid #e2e8f0}
+.stat-box .v{font-size:20px;font-weight:900}
 .stat-box .l{font-size:10px;color:#94a3b8;margin-top:2px}
-.hours-badge{background:#f5f3ff;color:#6366f1;border-radius:8px;padding:4px 8px;font-size:12px;font-weight:800}
-select.inp{cursor:pointer}
+.tab-bar{display:flex;background:#fff;border-bottom:2px solid #f1f5f9;position:sticky;top:0;z-index:10}
+.tab{flex:1;padding:12px 4px;border:none;border-bottom:3px solid transparent;background:none;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:#94a3b8}
+.tab.active{border-bottom-color:#6366f1;color:#6366f1}
+.day-label{font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px;display:flex;align-items:center;gap:6px}
+.day-label hr{flex:1;border:none;border-top:1px solid #e2e8f0}
+.suggest-item{padding:12px 14px;border-bottom:1px solid #f1f5f9;cursor:pointer;font-size:14px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:10px}
+.suggest-item:hover{background:#f5f3ff}
+.suggest-item:last-child{border-bottom:none}
 </style>
 </head>
 <body>
-<div id="app"><div style="text-align:center;padding:60px 20px;color:#94a3b8;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700">⏳ Yuklanmoqda...</div></div>
+<div id="app"><div style="text-align:center;padding:80px 20px;color:#94a3b8;font-weight:700;font-size:14px">⏳ Yuklanmoqda...</div></div>
 
 <script>
-const SUPABASE_URL = 'https://gvvbguakxjjgxshjvyyx.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2dmJndWFreGpqZ3hzaGp2eXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwODAyMTYsImV4cCI6MjA5NjY1NjIxNn0.jyW9XpO2KRUUa3S9Y8dpSEKx_h5SNhjgsFYsGf4D9Qs';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SB_URL='https://gvvbguakxjjgxshjvyyx.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2dmJndWFreGpqZ3hzaGp2eXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwODAyMTYsImV4cCI6MjA5NjY1NjIxNn0.jyW9XpO2KRUUa3S9Y8dpSEKx_h5SNhjgsFYsGf4D9Qs';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+const ADMIN_PASS='durdona01';
 
-let workers = [];
-let attendance = [];
-let currentTab = 'check'; // check | history | admin
-let selectedWorker = null;
+let workers=[],attendance=[],screen='login',currentWorker=null,adminTab='workers';
 
-async function loadData() {
-  const { data: w } = await sb.from('workers').select('*').order('name');
-  const { data: a } = await sb.from('attendance').select('*').order('time', { ascending: false });
-  workers = w || [];
-  attendance = a || [];
+async function load(){
+  const{data:w}=await sb.from('workers').select('*').order('name');
+  const{data:a}=await sb.from('attendance').select('*').order('time',{ascending:false});
+  workers=w||[];attendance=a||[];
 }
 
-function todayStr() { return new Date().toISOString().split('T')[0]; }
+const colors=['#6366f1','#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#0ea5e9','#14b8a6','#f97316','#ec4899'];
+const gc=id=>colors[id%colors.length];
+const gi=n=>n.split(' ').map(x=>x[0]||'').join('').toUpperCase().slice(0,2);
+const today=()=>new Date().toISOString().split('T')[0];
 
-function timeStr(ts) {
-  if (!ts) return '';
-  return new Date(ts).toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+function timeStr(ts){if(!ts)return'';return new Date(ts).toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'});}
+function dateStr(d){if(!d)return'';return new Date(d).toLocaleDateString('uz-UZ',{day:'2-digit',month:'short',year:'numeric'});}
+function nowStr(){return new Date().toLocaleDateString('uz-UZ',{weekday:'long',day:'numeric',month:'long'});}
+
+function getStatus(wid,date=today()){
+  const arr=attendance.filter(a=>a.worker_id==wid&&a.date===date);
+  if(!arr.length)return'out';
+  return arr[0].type==='keldi'?'in':'out';
 }
 
-function dateStr(d) {
-  if (!d) return '';
-  return new Date(d).toLocaleDateString('uz-UZ', { day: '2-digit', month: 'short' });
-}
-
-function getWorkerStatus(workerId) {
-  const todayAtt = attendance.filter(a => a.worker_id == workerId && a.date === todayStr());
-  if (todayAtt.length === 0) return 'out';
-  const last = todayAtt[0];
-  return last.type === 'keldi' ? 'in' : 'out';
-}
-
-function getWorkerHours(workerId, date) {
-  const dayAtt = attendance.filter(a => a.worker_id == workerId && a.date === date).reverse();
-  let total = 0;
-  let lastKeldi = null;
-  dayAtt.forEach(a => {
-    if (a.type === 'keldi') lastKeldi = new Date(a.time);
-    else if (a.type === 'ketti' && lastKeldi) {
-      total += (new Date(a.time) - lastKeldi) / (1000 * 60 * 60);
-      lastKeldi = null;
-    }
+function calcHours(wid,date){
+  const arr=[...attendance.filter(a=>a.worker_id==wid&&a.date===date)].reverse();
+  let total=0,last=null;
+  arr.forEach(a=>{
+    if(a.type==='keldi')last=new Date(a.time);
+    else if(a.type==='ketti'&&last){total+=(new Date(a.time)-last)/3600000;last=null;}
   });
-  return total.toFixed(1);
+  if(last)total+=(new Date()-last)/3600000;
+  return total;
 }
 
-function getTodayPresent() {
-  const todayIds = [...new Set(attendance.filter(a => a.date === todayStr()).map(a => a.worker_id))];
-  return todayIds.length;
+function getMonthDates(year,month){
+  const days=[];const d=new Date(year,month-1,1);
+  while(d.getMonth()===month-1){days.push(d.toISOString().split('T')[0]);d.setDate(d.getDate()+1);}
+  return days;
 }
 
-function getCurrentlyIn() {
-  return workers.filter(w => getWorkerStatus(w.id) === 'in').length;
+function toast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
 }
 
-function getInitials(name) {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+// ─── SCREENS ─────────────────────────────────────────────────────────────────
+function render(){
+  if(screen==='login')renderLogin();
+  else if(screen==='worker')renderWorker();
+  else if(screen==='admin')renderAdmin();
 }
 
-const colors = ['#6366f1','#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#0ea5e9','#14b8a6'];
-function getColor(id) { return colors[id % colors.length]; }
-
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast'; t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
-}
-
-function render() {
-  const todayPresent = getTodayPresent();
-  const currentlyIn = getCurrentlyIn();
-
-  if (currentTab === 'check') {
-    document.getElementById('app').innerHTML = `
-      <div class="header" style="background:linear-gradient(135deg,#4f46e5,#6366f1)">
-        <div class="date">${new Date().toLocaleDateString('uz-UZ', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-        <h1>👷 Davomat Tizimi</h1>
+function renderLogin(){
+  document.getElementById('app').innerHTML=`
+  <div class="header" style="background:linear-gradient(135deg,#4f46e5,#6366f1)">
+    <div class="sub">${nowStr()}</div>
+    <h1>👷 Davomat Tizimi</h1>
+  </div>
+  <div style="padding:20px">
+    <div class="card">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:40px;margin-bottom:8px">🙋</div>
+        <div style="font-size:16px;font-weight:900;color:#1e293b">Ismingizni kiriting</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:4px">Davomatni belgilash uchun</div>
       </div>
-      <div class="tabs">
-        <button class="tab active">✅ Belgilash</button>
-        <button class="tab" onclick="setTab('history')">📋 Tarix</button>
-        <button class="tab" onclick="setTab('admin')">👨‍💼 Admin</button>
+      <label class="label">Ism Familya</label>
+      <input class="inp" id="nameInput" placeholder="Masalan: Aliyev Jasur" oninput="filterWorkers(this.value)" autocomplete="off">
+      <div id="suggestions" style="background:#fff;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;margin-top:-8px;margin-bottom:12px;display:none"></div>
+      <button class="btn btn-purple" onclick="loginWorker()">Kirish →</button>
+    </div>
+    <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="openAdmin()">🔐 Admin kirish</button>
+  </div>`;
+}
+
+function filterWorkers(val){
+  const box=document.getElementById('suggestions');
+  if(!val.trim()){box.style.display='none';return;}
+  const matches=workers.filter(w=>w.name.toLowerCase().includes(val.toLowerCase()));
+  if(!matches.length){box.style.display='none';return;}
+  box.style.display='block';
+  box.innerHTML=matches.map(w=>`
+    <div class="suggest-item" onclick="selectWorker('${w.name}')">
+      <div class="avatar" style="background:${gc(w.id)};width:32px;height:32px;font-size:12px">${gi(w.name)}</div>
+      <span>${w.name}</span>
+    </div>`).join('');
+}
+
+function selectWorker(name){
+  document.getElementById('nameInput').value=name;
+  document.getElementById('suggestions').style.display='none';
+}
+
+function loginWorker(){
+  const val=document.getElementById('nameInput').value.trim();
+  if(!val){toast('⚠️ Ismingizni kiriting!');return;}
+  const w=workers.find(x=>x.name.toLowerCase()===val.toLowerCase());
+  if(!w){toast('❌ Ishchi topilmadi!');return;}
+  currentWorker=w;screen='worker';render();
+}
+
+function renderWorker(){
+  const w=currentWorker;
+  const st=getStatus(w.id);
+  const todayAtt=attendance.filter(a=>a.worker_id==w.id&&a.date===today());
+  const hrs=calcHours(w.id,today());
+  const m=new Date();
+  const monthDays=getMonthDates(m.getFullYear(),m.getMonth()+1);
+  const monthDayCount=[...new Set(attendance.filter(a=>a.worker_id==w.id&&monthDays.includes(a.date)).map(a=>a.date))].length;
+
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().split('T')[0]);}
+
+  document.getElementById('app').innerHTML=`
+  <div class="header" style="background:linear-gradient(135deg,${gc(w.id)},${gc(w.id)}cc)">
+    <div class="sub">${nowStr()}</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+      <div class="avatar" style="background:rgba(255,255,255,.25);width:48px;height:48px;font-size:18px">${gi(w.name)}</div>
+      <div>
+        <div style="font-size:18px;font-weight:900">${w.name}</div>
+        <div style="font-size:11px;opacity:.8">${w.position||'Ishchi'}</div>
       </div>
-      <div class="content">
-        <div class="stats-grid">
-          <div class="stat-box"><div class="v" style="color:#6366f1">${workers.length}</div><div class="l">Jami ishchi</div></div>
-          <div class="stat-box"><div class="v" style="color:#22c55e">${currentlyIn}</div><div class="l">🟢 Ichkarida</div></div>
-          <div class="stat-box"><div class="v" style="color:#f59e0b">${todayPresent}</div><div class="l">Bugun keldi</div></div>
+    </div>
+  </div>
+  <div style="padding:16px">
+    <div class="card">
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="v" style="color:${gc(w.id)}">${hrs.toFixed(1)}</div>
+          <div class="l">Bugun (soat)</div>
         </div>
-        ${workers.length === 0 ? `
-        <div class="empty">
-          <div class="icon">👷</div>
-          <div style="font-size:14px;font-weight:700;margin-bottom:6px">Ishchi yo'q</div>
-          <button class="btn btn-purple" style="width:auto;padding:10px 20px" onclick="setTab('admin')">+ Ishchi qo'shish</button>
-        </div>` : ''}
-        ${workers.map(w => {
-          const st = getWorkerStatus(w.id);
-          const hours = getWorkerHours(w.id, todayStr());
-          return `
-          <div class="worker-card" onclick="selectWorkerAction(${w.id})">
-            <div class="avatar" style="background:${getColor(w.id)}">${getInitials(w.name)}</div>
+        <div class="stat-box">
+          <div class="v" style="color:#22c55e">${monthDayCount}</div>
+          <div class="l">Bu oy (kun)</div>
+        </div>
+        <div class="stat-box">
+          <div class="v" style="color:#f59e0b">${st==='in'?'🟢':'⚪'}</div>
+          <div class="l">${st==='in'?'Ichkarida':'Tashqarida'}</div>
+        </div>
+      </div>
+      <button class="btn btn-green" onclick="mark(${w.id},'keldi')" ${st==='in'?'disabled':''}>🟢 Keldim</button>
+      <button class="btn btn-red" onclick="mark(${w.id},'ketti')" ${st==='out'?'disabled':''}>🔴 Ketdim</button>
+    </div>
+
+    <div class="section-title">📋 Bugungi yozuvlar</div>
+    <div class="card">
+      ${todayAtt.length===0?`<div style="text-align:center;padding:16px;color:#94a3b8;font-size:13px">Bugun hali yozuv yo'q</div>`:''}
+      ${todayAtt.map(a=>`
+        <div class="att-row">
+          <div style="font-size:20px">${a.type==='keldi'?'🟢':'🔴'}</div>
+          <div style="flex:1;font-size:13px;font-weight:700;color:#1e293b">${a.type==='keldi'?'Keldi':'Ketti'}</div>
+          <div style="font-size:15px;font-weight:900;color:${a.type==='keldi'?'#16a34a':'#dc2626'}">${timeStr(a.time)}</div>
+        </div>`).join('')}
+    </div>
+
+    <div class="section-title">📅 So'nggi 7 kun</div>
+    <div class="card">
+      ${days.reverse().map(d=>{
+        const dayAtt=attendance.filter(a=>a.worker_id==w.id&&a.date===d);
+        const h=calcHours(w.id,d);
+        return`<div class="att-row">
+          <div style="font-size:12px;font-weight:700;color:#64748b;width:70px">${dateStr(d)}</div>
+          <div style="flex:1">
+            ${dayAtt.length===0?`<span style="color:#cbd5e1;font-size:12px">Kelmagan</span>`:''}
+            ${dayAtt.map(a=>`<span style="background:${a.type==='keldi'?'#f0fdf4':'#fff1f2'};color:${a.type==='keldi'?'#16a34a':'#dc2626'};border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;margin-right:4px">${a.type==='keldi'?'▲':'▼'}${timeStr(a.time)}</span>`).join('')}
+          </div>
+          ${h>0?`<div style="font-size:12px;font-weight:800;color:#6366f1">${h.toFixed(1)}s</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+
+    <button class="btn btn-gray" onclick="currentWorker=null;screen='login';render()">← Chiqish</button>
+  </div>`;
+}
+
+function renderAdmin(){
+  const m=new Date();
+  const year=m.getFullYear(),month=m.getMonth()+1;
+  const monthDays=getMonthDates(year,month);
+  const today2=today();
+
+  if(adminTab==='workers'){
+    const presentNow=workers.filter(w=>getStatus(w.id)==='in').length;
+    const todayWorkers=[...new Set(attendance.filter(a=>a.date===today2).map(a=>a.worker_id))].length;
+
+    document.getElementById('app').innerHTML=`
+    <div class="header" style="background:linear-gradient(135deg,#0f172a,#1e3a5f)">
+      <div class="sub">${nowStr()}</div>
+      <h1>👨‍💼 Admin Panel</h1>
+    </div>
+    <div class="tab-bar">
+      <button class="tab active">👥 Ishchilar</button>
+      <button class="tab" onclick="adminTab='report';render()">📊 Hisobot</button>
+      <button class="tab" onclick="adminTab='history';render()">📋 Tarix</button>
+    </div>
+    <div style="padding:16px">
+      <div class="stat-row">
+        <div class="stat-box"><div class="v" style="color:#6366f1">${workers.length}</div><div class="l">Jami ishchi</div></div>
+        <div class="stat-box"><div class="v" style="color:#22c55e">${presentNow}</div><div class="l">🟢 Ichkarida</div></div>
+        <div class="stat-box"><div class="v" style="color:#f59e0b">${todayWorkers}</div><div class="l">Bugun keldi</div></div>
+      </div>
+      ${workers.map(w=>{
+        const st=getStatus(w.id);
+        const hrs=calcHours(w.id,today2);
+        const monthDayCount=[...new Set(attendance.filter(a=>a.worker_id==w.id&&monthDays.includes(a.date)).map(a=>a.date))].length;
+        const monthHrs=monthDays.reduce((s,d)=>s+calcHours(w.id,d),0);
+        return`<div class="card" style="border-left:4px solid ${gc(w.id)}">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div class="avatar" style="background:${gc(w.id)};width:40px;height:40px">${gi(w.name)}</div>
             <div style="flex:1">
               <div style="font-size:14px;font-weight:800;color:#1e293b">${w.name}</div>
-              <div style="font-size:11px;color:#94a3b8;margin-top:2px">${w.position || 'Ishchi'}</div>
+              <div style="font-size:11px;color:#94a3b8">${w.position||'Ishchi'}</div>
+            </div>
+            <div class="${st==='in'?'status-in':'status-out'}">${st==='in'?'🟢 Ichkarida':'⚪ Tashqarida'}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <span style="background:#f5f3ff;color:#6366f1;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700">Bugun: ${hrs.toFixed(1)} soat</span>
+            <span style="background:#eff6ff;color:#2563eb;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700">Bu oy: ${monthDayCount} kun</span>
+            <button onclick="deleteWorker(${w.id})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:13px;margin-left:auto">🗑</button>
+          </div>
+        </div>`;
+      }).join('')}
+      <button class="btn btn-outline" onclick="showAddWorker()">+ Yangi ishchi qo'shish</button>
+      <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="screen='login';render()">← Chiqish</button>
+    </div>`;
+  }
+
+  else if(adminTab==='report'){
+    document.getElementById('app').innerHTML=`
+    <div class="header" style="background:linear-gradient(135deg,#0f172a,#1e3a5f)">
+      <div class="sub">${nowStr()}</div>
+      <h1>📊 Oylik Hisobot</h1>
+    </div>
+    <div class="tab-bar">
+      <button class="tab" onclick="adminTab='workers';render()">👥 Ishchilar</button>
+      <button class="tab active">📊 Hisobot</button>
+      <button class="tab" onclick="adminTab='history';render()">📋 Tarix</button>
+    </div>
+    <div style="padding:16px">
+      <div class="card">
+        <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:12px">📅 ${year} yil, ${month}-oy</div>
+        ${workers.map(w=>{
+          const days=[...new Set(attendance.filter(a=>a.worker_id==w.id&&monthDays.includes(a.date)).map(a=>a.date))].length;
+          const hrs=monthDays.reduce((s,d)=>s+calcHours(w.id,d),0);
+          return`<div class="att-row">
+            <div class="avatar" style="background:${gc(w.id)};width:36px;height:36px;font-size:13px">${gi(w.name)}</div>
+            <div style="flex:1;padding-left:10px">
+              <div style="font-size:13px;font-weight:800;color:#1e293b">${w.name}</div>
+              <div style="font-size:11px;color:#94a3b8">${w.position||'Ishchi'}</div>
             </div>
             <div style="text-align:right">
-              <div class="status-badge ${st === 'in' ? 'status-in' : 'status-out'}">${st === 'in' ? '🟢 Ichkarida' : '⚪ Tashqarida'}</div>
-              ${Number(hours) > 0 ? `<div class="hours-badge" style="margin-top:4px">${hours} soat</div>` : ''}
+              <div style="font-size:14px;font-weight:900;color:#1e293b">${days} kun</div>
+              <div style="font-size:11px;color:#6366f1;font-weight:700">${hrs.toFixed(1)} soat</div>
             </div>
           </div>`;
         }).join('')}
-      </div>`;
+      </div>
+      <button class="btn btn-excel" onclick="downloadExcel()">📥 Excel yuklab olish</button>
+      <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="screen='login';render()">← Chiqish</button>
+    </div>`;
   }
 
-  else if (currentTab === 'history') {
-    const grouped = {};
-    attendance.forEach(a => {
-      if (!grouped[a.date]) grouped[a.date] = [];
-      grouped[a.date].push(a);
-    });
-    const dates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+  else if(adminTab==='history'){
+    const grouped={};
+    attendance.forEach(a=>{if(!grouped[a.date])grouped[a.date]=[];grouped[a.date].push(a);});
+    const dates=Object.keys(grouped).sort((a,b)=>b.localeCompare(a)).slice(0,30);
 
-    document.getElementById('app').innerHTML = `
-      <div class="header" style="background:linear-gradient(135deg,#5b21b6,#7c3aed)">
-        <div class="date">${new Date().toLocaleDateString('uz-UZ', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-        <h1>📋 Davomat Tarixi</h1>
-      </div>
-      <div class="tabs">
-        <button class="tab" onclick="setTab('check')">✅ Belgilash</button>
-        <button class="tab active">📋 Tarix</button>
-        <button class="tab" onclick="setTab('admin')">👨‍💼 Admin</button>
-      </div>
-      <div class="content">
-        ${dates.length === 0 ? `<div class="empty"><div class="icon">📭</div><div style="font-size:14px;font-weight:700">Hali yozuv yo'q</div></div>` : ''}
-        ${dates.map(date => `
-          <div class="sep"><span>${dateStr(date)}</span><hr><span style="color:#94a3b8">${grouped[date].length} ta</span></div>
-          ${grouped[date].map(a => `
-            <div class="att-item ${a.type}">
-              <div class="avatar" style="background:${getColor(a.worker_id)};width:36px;height:36px;border-radius:10px;font-size:14px">${getInitials(a.worker_name)}</div>
-              <div style="flex:1">
-                <div style="font-size:14px;font-weight:800;color:#1e293b">${a.worker_name}</div>
-                <div style="font-size:11px;color:#94a3b8">${a.type === 'keldi' ? '🟢 Keldi' : '🔴 Ketti'}</div>
-              </div>
-              <div style="font-size:15px;font-weight:900;color:${a.type === 'keldi' ? '#16a34a' : '#dc2626'}">${timeStr(a.time)}</div>
-            </div>`).join('')}`).join('')}
-      </div>`;
-  }
-
-  else if (currentTab === 'admin') {
-    document.getElementById('app').innerHTML = `
-      <div class="header" style="background:linear-gradient(135deg,#0f172a,#1e3a5f)">
-        <div class="date">${new Date().toLocaleDateString('uz-UZ', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-        <h1>👨‍💼 Admin Panel</h1>
-      </div>
-      <div class="tabs">
-        <button class="tab" onclick="setTab('check')">✅ Belgilash</button>
-        <button class="tab" onclick="setTab('history')">📋 Tarix</button>
-        <button class="tab active">👨‍💼 Admin</button>
-      </div>
-      <div class="content">
-        <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:10px">📊 Bugungi hisobot</div>
-        ${workers.map(w => {
-          const hours = getWorkerHours(w.id, todayStr());
-          const st = getWorkerStatus(w.id);
-          const todayAtt = attendance.filter(a => a.worker_id == w.id && a.date === todayStr());
-          return `
-          <div class="card">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-              <div class="avatar" style="background:${getColor(w.id)};width:38px;height:38px;border-radius:10px;font-size:15px">${getInitials(w.name)}</div>
-              <div style="flex:1">
-                <div style="font-size:14px;font-weight:800;color:#1e293b">${w.name}</div>
-                <div style="font-size:11px;color:#94a3b8">${w.position || 'Ishchi'}</div>
-              </div>
-              <button onclick="deleteWorker(${w.id})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:16px">🗑</button>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              ${todayAtt.map(a => `
-                <span style="background:${a.type === 'keldi' ? '#f0fdf4' : '#fff1f2'};color:${a.type === 'keldi' ? '#16a34a' : '#dc2626'};border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700">
-                  ${a.type === 'keldi' ? '🟢' : '🔴'} ${timeStr(a.time)}
-                </span>`).join('')}
-              ${Number(hours) > 0 ? `<span class="hours-badge">⏱ ${hours} soat</span>` : ''}
-              ${todayAtt.length === 0 ? `<span style="color:#94a3b8;font-size:12px">Bugun kelmagan</span>` : ''}
-            </div>
-          </div>`;
-        }).join('')}
-        <button class="btn btn-outline" style="margin-top:8px" onclick="showAddWorker()">+ Yangi ishchi qo'shish</button>
-      </div>`;
+    document.getElementById('app').innerHTML=`
+    <div class="header" style="background:linear-gradient(135deg,#0f172a,#1e3a5f)">
+      <div class="sub">${nowStr()}</div>
+      <h1>📋 Davomat Tarixi</h1>
+    </div>
+    <div class="tab-bar">
+      <button class="tab" onclick="adminTab='workers';render()">👥 Ishchilar</button>
+      <button class="tab" onclick="adminTab='report';render()">📊 Hisobot</button>
+      <button class="tab active">📋 Tarix</button>
+    </div>
+    <div style="padding:16px">
+      ${dates.length===0?`<div style="text-align:center;padding:40px;color:#94a3b8">Hali yozuv yo'q</div>`:''}
+      ${dates.map(date=>`
+        <div class="day-label"><span>${dateStr(date)}</span><hr><span style="color:#94a3b8">${grouped[date].length} ta</span></div>
+        ${grouped[date].map(a=>`
+          <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-left:3px solid ${a.type==='keldi'?'#22c55e':'#ef4444'}">
+            <div class="avatar" style="background:${gc(a.worker_id)};width:34px;height:34px;font-size:12px">${gi(a.worker_name)}</div>
+            <div style="flex:1"><div style="font-size:13px;font-weight:800;color:#1e293b">${a.worker_name}</div></div>
+            <div style="font-size:14px;font-weight:900;color:${a.type==='keldi'?'#16a34a':'#dc2626'}">${a.type==='keldi'?'🟢':'🔴'} ${timeStr(a.time)}</div>
+          </div>`).join('')}`).join('')}
+      <button class="btn btn-gray" style="font-size:13px;padding:11px;margin-top:8px" onclick="screen='login';render()">← Chiqish</button>
+    </div>`;
   }
 }
 
-function setTab(t) {
-  if (t === "admin") {
-    const p = prompt("Admin paroli:");
-    if (p !== "durdona01") { showToast("❌ Parol noto'g'ri!"); return; }
-  }
-  currentTab = t; render();
+function openAdmin(){
+  const p=prompt('Admin paroli:');
+  if(p!==ADMIN_PASS){toast('❌ Parol noto\'g\'ri!');return;}
+  adminTab='workers';screen='admin';render();
 }
 
-function selectWorkerAction(id) {
-  const w = workers.find(x => x.id == id);
-  const st = getWorkerStatus(id);
-  document.getElementById('app').insertAdjacentHTML('beforeend', `
-    <div class="modal" id="actionModal">
-      <div class="modal-box" style="text-align:center">
-        <div class="avatar" style="background:${getColor(w.id)};width:60px;height:60px;border-radius:16px;font-size:22px;margin:0 auto 12px">${getInitials(w.name)}</div>
-        <div style="font-size:18px;font-weight:900;color:#1e293b;margin-bottom:4px">${w.name}</div>
-        <div style="font-size:12px;color:#94a3b8;margin-bottom:20px">${w.position || 'Ishchi'}</div>
-        <div style="font-size:13px;color:#64748b;margin-bottom:16px">Hozirgi holat: <strong style="color:${st === 'in' ? '#16a34a' : '#94a3b8'}">${st === 'in' ? '🟢 Ichkarida' : '⚪ Tashqarida'}</strong></div>
-        <button class="btn btn-green" onclick="markAttendance(${w.id},'keldi')" ${st === 'in' ? 'style="opacity:.4;pointer-events:none"' : ''}>🟢 Keldim</button>
-        <button class="btn btn-red" onclick="markAttendance(${w.id},'ketti')" ${st === 'out' ? 'style="opacity:.4;pointer-events:none"' : ''}>🔴 Ketdim</button>
-        <button class="btn" style="background:#f1f5f9;color:#64748b" onclick="document.getElementById('actionModal').remove()">Bekor</button>
-      </div>
-    </div>`);
+async function mark(wid,type){
+  const w=workers.find(x=>x.id==wid);
+  await sb.from('attendance').insert({worker_id:wid,worker_name:w.name,type,date:today()});
+  await load();
+  toast(type==='keldi'?`✅ ${w.name} keldi!`:`👋 ${w.name} ketti!`);
+  currentWorker=workers.find(x=>x.id==wid);render();
 }
 
-async function markAttendance(workerId, type) {
-  const w = workers.find(x => x.id == workerId);
-  document.getElementById('actionModal')?.remove();
-  await sb.from('attendance').insert({
-    worker_id: workerId,
-    worker_name: w.name,
-    type,
-    date: todayStr()
-  });
-  await loadData();
-  showToast(type === 'keldi' ? `✅ ${w.name} keldi!` : `👋 ${w.name} ketti!`);
-  render();
-}
-
-function showAddWorker() {
-  document.getElementById('app').insertAdjacentHTML('beforeend', `
+function showAddWorker(){
+  document.getElementById('app').insertAdjacentHTML('beforeend',`
     <div class="modal" id="addModal">
       <div class="modal-box">
         <div style="font-size:17px;font-weight:900;color:#1e293b;margin-bottom:16px">+ Yangi ishchi</div>
-        <label class="label">ISM FAMILYA *</label>
-        <input type="text" class="inp" id="wName" placeholder="Masalan: Aliyev Jasur">
-        <label class="label">LAVOZIM</label>
-        <input type="text" class="inp" id="wPos" placeholder="Masalan: Ofitsiant">
-        <div style="display:flex;gap:10px;margin-top:4px">
-          <button class="btn" style="flex:1;background:#f1f5f9;color:#64748b" onclick="document.getElementById('addModal').remove()">Bekor</button>
-          <button class="btn btn-purple" style="flex:2" id="addBtn" onclick="addWorker()">✓ Qo'shish</button>
+        <label class="label">Ism Familya *</label>
+        <input class="inp" id="wName" placeholder="Masalan: Aliyev Jasur">
+        <label class="label">Lavozim</label>
+        <input class="inp" id="wPos" placeholder="Masalan: Ofitsiant">
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-gray" style="margin-bottom:0" onclick="document.getElementById('addModal').remove()">Bekor</button>
+          <button class="btn btn-purple" style="margin-bottom:0" id="addBtn" onclick="addWorker()">✓ Qo'shish</button>
         </div>
       </div>
     </div>`);
 }
 
-async function addWorker() {
-  const name = document.getElementById('wName').value.trim();
-  if (!name) { showToast('⚠️ Ism kiriting!'); return; }
-  document.getElementById('addBtn').textContent = 'Saqlanmoqda...';
-  document.getElementById('addBtn').disabled = true;
-  await sb.from('workers').insert({ name, position: document.getElementById('wPos').value });
-  await loadData();
-  document.getElementById('addModal').remove();
-  showToast('✅ Ishchi qo\'shildi!');
-  render();
+async function addWorker(){
+  const name=document.getElementById('wName').value.trim();
+  if(!name){toast('⚠️ Ism kiriting!');return;}
+  const btn=document.getElementById('addBtn');btn.disabled=true;btn.textContent='Saqlanmoqda...';
+  await sb.from('workers').insert({name,position:document.getElementById('wPos').value});
+  await load();document.getElementById('addModal').remove();
+  toast('✅ Ishchi qo\'shildi!');render();
 }
 
-async function deleteWorker(id) {
-  if (!confirm('Bu ishchini o\'chirasizmi?')) return;
-  await sb.from('attendance').delete().eq('worker_id', id);
-  await sb.from('workers').delete().eq('id', id);
-  await loadData();
-  showToast('🗑 O\'chirildi!');
-  render();
+async function deleteWorker(id){
+  if(!confirm('Bu ishchini o\'chirasizmi?'))return;
+  await sb.from('attendance').delete().eq('worker_id',id);
+  await sb.from('workers').delete().eq('id',id);
+  await load();toast('🗑 O\'chirildi!');render();
 }
 
-loadData().then(render);
+function downloadExcel(){
+  const m=new Date();
+  const year=m.getFullYear(),month=m.getMonth()+1;
+  const monthDays=getMonthDates(year,month);
+  let csv='Ism,Lavozim,Jami kun,Jami soat\n';
+  workers.forEach(w=>{
+    const days=[...new Set(attendance.filter(a=>a.worker_id==w.id&&monthDays.includes(a.date)).map(a=>a.date))].length;
+    const hrs=monthDays.reduce((s,d)=>s+calcHours(w.id,d),0);
+    csv+=`"${w.name}","${w.position||''}",${days},${hrs.toFixed(2)}\n`;
+  });
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`Davomat_${year}_${month}.csv`;a.click();
+  toast('📥 Fayl yuklab olindi!');
+}
+
+load().then(render);
 </script>
 </body>
 </html>
