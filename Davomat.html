@@ -67,9 +67,9 @@ async function load(){
 const colors=['#6366f1','#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#0ea5e9','#14b8a6','#f97316','#ec4899'];
 const gc=id=>colors[id%colors.length];
 const gi=n=>n.split(' ').map(x=>x[0]||'').join('').toUpperCase().slice(0,2);
-const today=()=>new Date().toISOString().split('T')[0];
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 
-function timeStr(ts){if(!ts)return'';return new Date(ts).toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'});}
+function timeStr(ts){if(!ts)return'';const d=new Date(ts);return d.toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Tashkent'});}
 function dateStr(d){if(!d)return'';return new Date(d).toLocaleDateString('uz-UZ',{day:'2-digit',month:'short',year:'numeric'});}
 function nowStr(){return new Date().toLocaleDateString('uz-UZ',{weekday:'long',day:'numeric',month:'long'});}
 
