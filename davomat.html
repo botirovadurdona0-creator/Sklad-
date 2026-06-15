@@ -65,7 +65,7 @@ async function load(){
 // Toshkent vaqti UTC+5
 function tzNow(){return new Date(Date.now()+5*3600000);}
 function today(){const d=tzNow();return d.toISOString().slice(0,10);}
-function fmtTime(ts){ if(!ts)return''; return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false}); }
+function fmtTime(ts){ if(!ts)return''; if(ts.length>=16&&ts.includes('T'))return ts.slice(11,16); return ts; }
 function fmtDate(s){
   if(!s)return'';
   const[y,m,d]=s.split('-');
@@ -342,8 +342,9 @@ function openAdmin(){
 async function mark(wid,type){
   const w=workers.find(x=>x.id==wid);
   // Toshkent vaqtini UTC sifatida saqlaymiz (server UTC da saqlaydi, biz +5 qo'shib ko'rsatamiz)
-  const nowUTC=new Date().toISOString();
-  await sb.from('attendance').insert({worker_id:wid,worker_name:w.name,type,date:today(),time:nowUTC});
+  const n=new Date(Date.now()+5*3600000);
+  const tzTime=n.toISOString().replace('Z','');
+  await sb.from('attendance').insert({worker_id:wid,worker_name:w.name,type,date:today(),time:tzTime});
   await load();
   toast(type==='keldi'?`✅ ${w.name} keldi!`:`👋 ${w.name} ketti!`);
   currentWorker=workers.find(x=>x.id==wid);render();
