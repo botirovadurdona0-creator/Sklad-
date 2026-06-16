@@ -193,6 +193,8 @@ function renderWorker(){
         <div class="stat-box"><div class="v" style="color:#22c55e">${monthDayCount}</div><div class="l">Bu oy (kun)</div></div>
         <div class="stat-box"><div class="v" style="color:#f59e0b">${st==='in'?'🟢':'⚪'}</div><div class="l">${st==='in'?'Ichkarida':'Tashqarida'}</div></div>
       </div>
+      <label class="label" style="margin-top:4px">IZOH (ixtiyoriy)</label>
+      <input class="inp" id="noteInp" placeholder="Masalan: Kech qoldim, sabab...">
       <button class="btn btn-green" onclick="mark(${w.id},'keldi')" ${st==='in'?'disabled':''}>🟢 Keldim</button>
       <button class="btn btn-red" onclick="mark(${w.id},'ketti')" ${st==='out'?'disabled':''}>🔴 Ketdim</button>
     </div>
@@ -202,7 +204,7 @@ function renderWorker(){
       ${todayAtt.map(a=>`
         <div class="att-row">
           <div style="font-size:20px">${a.type==='keldi'?'🟢':'🔴'}</div>
-          <div style="flex:1;font-size:13px;font-weight:700;color:#1e293b">${a.type==='keldi'?'Keldi':'Ketti'}</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#1e293b">${a.type==='keldi'?'Keldi':'Ketti'}</div>${a.note?`<div style="font-size:11px;color:#94a3b8">${a.note}</div>`:''}</div>
           <div style="font-size:15px;font-weight:900;color:${a.type==='keldi'?'#16a34a':'#dc2626'}">${fmtTime(a.time)}</div>
         </div>`).join('')}
     </div>
@@ -262,10 +264,21 @@ function renderAdmin(){
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
             <span style="background:#f5f3ff;color:#6366f1;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700">Bugun: ${hrs.toFixed(1)} soat</span>
             <span style="background:#eff6ff;color:#2563eb;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700">Bu oy: ${mdays} kun</span>
-            <button onclick="deleteWorker(${w.id})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:13px;margin-left:auto">🗑</button>
+            <button onclick="editWorker(${w.id})" style="background:none;border:none;color:#93c5fd;cursor:pointer;font-size:13px">✏️</button>
+            <button onclick="deleteWorker(${w.id})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:13px">🗑</button>
           </div>
         </div>`;
       }).join('')}
+      <div style="font-size:13px;font-weight:900;color:#1e293b;margin:16px 0 8px">🟢 Hozir ishda</div>
+      <div class="card" style="padding:10px">
+        ${workers.filter(w=>getStatus(w.id,td)==='in').length===0?'<div style="text-align:center;padding:10px;color:#94a3b8;font-size:13px">Hozir hech kim ishda emas</div>':''}
+        ${workers.filter(w=>getStatus(w.id,td)==='in').map(w=>`
+          <div class="att-row">
+            <div class="avatar" style="background:${gc(w.id)};width:32px;height:32px;font-size:12px">${gi(w.name)}</div>
+            <div style="flex:1;padding-left:8px;font-size:13px;font-weight:700;color:#1e293b">${w.name}</div>
+            <div style="font-size:11px;color:#22c55e;font-weight:700">🟢 Ichkarida</div>
+          </div>`).join('')}
+      </div>
       <button class="btn btn-outline" onclick="showAddWorker()">+ Yangi ishchi qo'shish</button>
       <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="screen='login';render()">← Chiqish</button>
     </div>`;
@@ -344,12 +357,36 @@ async function mark(wid,type){
   // Toshkent vaqtini UTC sifatida saqlaymiz (server UTC da saqlaydi, biz +5 qo'shib ko'rsatamiz)
   const n=new Date(Date.now()+5*3600000);
   const tzTime=n.toISOString().replace('Z','');
-  await sb.from('attendance').insert({worker_id:wid,worker_name:w.name,type,date:today(),time:tzTime});
+  const note=document.getElementById('noteInp')?document.getElementById('noteInp').value:'';
+  await sb.from('attendance').insert({worker_id:wid,worker_name:w.name,type,date:today(),time:tzTime,note});
   await load();
   toast(type==='keldi'?`✅ ${w.name} keldi!`:`👋 ${w.name} ketti!`);
   currentWorker=workers.find(x=>x.id==wid);render();
 }
 
+function editWorker(id){
+  const w=workers.find(x=>x.id==id);
+  document.getElementById('app').insertAdjacentHTML('beforeend',`
+    <div class="modal" id="editModal">
+      <div class="modal-box">
+        <div style="font-size:17px;font-weight:900;color:#1e293b;margin-bottom:16px">✏️ ${w.name}</div>
+        <label class="label">LAVOZIM</label>
+        <input class="inp" id="ePos" value="${w.position||''}">
+        <label class="label">TELEFON</label>
+        <input class="inp" id="ePhone" value="${w.phone||''}">
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-gray" style="margin-bottom:0" onclick="document.getElementById('editModal').remove()">Bekor</button>
+          <button class="btn btn-purple" style="margin-bottom:0" id="editBtn" onclick="saveEditWorker(${w.id})">✓ Saqlash</button>
+        </div>
+      </div>
+    </div>`);
+}
+async function saveEditWorker(id){
+  const btn=document.getElementById('editBtn');btn.disabled=true;btn.textContent='Saqlanmoqda...';
+  await sb.from('workers').update({position:document.getElementById('ePos').value,phone:document.getElementById('ePhone').value}).eq('id',id);
+  await load();document.getElementById('editModal').remove();
+  toast('✅ Saqlandi!');render();
+}
 function showAddWorker(){
   document.getElementById('app').insertAdjacentHTML('beforeend',`
     <div class="modal" id="addModal">
@@ -359,6 +396,8 @@ function showAddWorker(){
         <input class="inp" id="wName" placeholder="Masalan: Aliyev Jasur">
         <label class="label">LAVOZIM</label>
         <input class="inp" id="wPos" placeholder="Masalan: Ofitsiant">
+        <label class="label">TELEFON RAQAM</label>
+        <input class="inp" id="wPhone" placeholder="+998 90 123 45 67">
         <div style="display:flex;gap:10px">
           <button class="btn btn-gray" style="margin-bottom:0" onclick="document.getElementById('addModal').remove()">Bekor</button>
           <button class="btn btn-purple" style="margin-bottom:0" id="addBtn" onclick="addWorker()">✓ Qo'shish</button>
@@ -371,7 +410,7 @@ async function addWorker(){
   const name=document.getElementById('wName').value.trim();
   if(!name){toast('⚠️ Ism kiriting!');return;}
   const btn=document.getElementById('addBtn');btn.disabled=true;btn.textContent='Saqlanmoqda...';
-  await sb.from('workers').insert({name,position:document.getElementById('wPos').value});
+  await sb.from('workers').insert({name,position:document.getElementById('wPos').value,phone:document.getElementById('wPhone').value});
   await load();document.getElementById('addModal').remove();
   toast('✅ Ishchi qo\'shildi!');render();
 }
