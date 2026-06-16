@@ -14,8 +14,8 @@ body{font-family:'Nunito',sans-serif;background:#f1f5f9;max-width:480px;margin:0
 .header .sub{font-size:11px;opacity:.75;margin-bottom:4px}
 .btn{width:100%;padding:14px;border-radius:14px;border:none;font-size:15px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;margin-bottom:10px}
 .btn:disabled{opacity:.4;pointer-events:none}
-.btn-green{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 4px 14px rgba(34,197,94,.3)}
-.btn-red{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;box-shadow:0 4px 14px rgba(239,68,68,.3)}
+.btn-green{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
+.btn-red{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
 .btn-purple{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff}
 .btn-gray{background:#e2e8f0;color:#64748b}
 .btn-outline{background:#fff;border:2px dashed #c7d2fe!important;color:#6366f1}
@@ -25,8 +25,6 @@ body{font-family:'Nunito',sans-serif;background:#f1f5f9;max-width:480px;margin:0
 .inp:focus{border-color:#6366f1}
 .label{font-size:12px;color:#64748b;font-weight:700;display:block;margin-bottom:6px}
 .avatar{border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0}
-.status-in{background:#f0fdf4;color:#16a34a;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
-.status-out{background:#f1f5f9;color:#94a3b8;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
 .att-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9}
 .att-row:last-child{border-bottom:none}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;z-index:300;white-space:nowrap}
@@ -39,10 +37,7 @@ body{font-family:'Nunito',sans-serif;background:#f1f5f9;max-width:480px;margin:0
 .tab-bar{display:flex;background:#fff;border-bottom:2px solid #f1f5f9;position:sticky;top:0;z-index:10}
 .tab{flex:1;padding:12px 4px;border:none;border-bottom:3px solid transparent;background:none;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:#94a3b8}
 .tab.active{border-bottom-color:#6366f1;color:#6366f1}
-.day-label{font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase;margin:12px 0 6px;display:flex;align-items:center;gap:6px}
-.day-label hr{flex:1;border:none;border-top:1px solid #e2e8f0}
 .suggest-item{padding:12px 14px;border-bottom:1px solid #f1f5f9;cursor:pointer;font-size:14px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:10px}
-.suggest-item:hover{background:#f5f3ff}
 .suggest-item:last-child{border-bottom:none}
 </style>
 </head>
@@ -62,28 +57,59 @@ async function load(){
   workers=w||[];attendance=a||[];
 }
 
-// Toshkent vaqti UTC+5
-function tzNow(){return new Date(Date.now()+5*3600000);}
-function today(){const d=new Date(Date.now()+5*3600000);return d.toISOString().slice(0,10);}
-function fmtTime(ts){ if(!ts)return''; if(ts.length>=16&&ts.includes('T'))return ts.slice(11,16); return ts; }
-function fmtDate(s){
-  if(!s)return'';
-  const[y,m,d]=s.split('-');
-  const months=['yan','fev','mar','apr','may','iyun','iyul','avg','sen','okt','noy','dek'];
-  return `${d}-${months[+m-1]}`;
+// Toshkent vaqti - telefon/kompyuter vaqtidan foydalanamiz
+function getTodayDate(){
+  const now=new Date();
+  const y=now.getFullYear();
+  const m=String(now.getMonth()+1).padStart(2,'0');
+  const d=String(now.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
 }
+
+function getNowTime(){
+  const now=new Date();
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  const s=String(now.getSeconds()).padStart(2,'0');
+  const y=now.getFullYear();
+  const mo=String(now.getMonth()+1).padStart(2,'0');
+  const d=String(now.getDate()).padStart(2,'0');
+  return `${y}-${mo}-${d}T${h}:${m}:${s}`;
+}
+
+function showTime(ts){
+  if(!ts) return '';
+  // ts = "2026-06-16T14:30:00" formatida
+  if(ts.includes('T')){
+    const parts=ts.split('T');
+    if(parts[1]) return parts[1].slice(0,5);
+  }
+  return ts.slice(0,5);
+}
+
+function showDate(s){
+  if(!s) return '';
+  const months=['yan','fev','mar','apr','may','iyun','iyul','avg','sen','okt','noy','dek'];
+  const parts=s.split('-');
+  if(parts.length>=3) return `${parts[2]}-${months[parseInt(parts[1])-1]}`;
+  return s;
+}
+
 function nowStr(){
-  return tzNow().toLocaleDateString('uz-UZ',{weekday:'long',day:'numeric',month:'long'});
+  const now=new Date();
+  const days=['Yakshanba','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'];
+  const months=['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'];
+  return `${days[now.getDay()]}, ${now.getDate()}-${months[now.getMonth()]}`;
 }
 
 const colors=['#6366f1','#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#0ea5e9','#14b8a6','#f97316','#ec4899'];
 const gc=id=>colors[id%colors.length];
 const gi=n=>n.split(' ').map(x=>x[0]||'').join('').toUpperCase().slice(0,2);
 
-function getStatus(wid,date){
-  date=date||today();
-  const arr=attendance.filter(a=>a.worker_id==wid&&a.date===date);
-  if(!arr.length)return'out';
+function getStatus(wid){
+  const td=getTodayDate();
+  const arr=attendance.filter(a=>a.worker_id==wid&&a.date===td);
+  if(!arr.length) return 'out';
   return arr[0].type==='keldi'?'in':'out';
 }
 
@@ -91,29 +117,48 @@ function calcHours(wid,date){
   const arr=[...attendance.filter(a=>a.worker_id==wid&&a.date===date)].reverse();
   let total=0,last=null;
   arr.forEach(a=>{
-    if(a.type==='keldi')last=new Date(a.time);
-    else if(a.type==='ketti'&&last){total+=(new Date(a.time)-last)/3600000;last=null;}
+    if(a.type==='keldi') last=new Date(a.time);
+    else if(a.type==='ketti'&&last){
+      total+=(new Date(a.time)-last)/3600000;
+      last=null;
+    }
   });
-  if(last)total+=(Date.now()-last)/3600000;
-  return total;
+  if(last) total+=(Date.now()-new Date(last))/3600000;
+  return Math.max(0,total);
 }
 
-function getMonthDates(year,month){
-  const days=[];const d=new Date(year,month-1,1);
-  while(d.getMonth()===month-1){days.push(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}
+function getMonthDates(){
+  const now=new Date();
+  const days=[];
+  const d=new Date(now.getFullYear(),now.getMonth(),1);
+  while(d.getMonth()===now.getMonth()){
+    days.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+    d.setDate(d.getDate()+1);
+  }
+  return days;
+}
+
+function getLast7Days(){
+  const days=[];
+  for(let i=0;i<7;i++){
+    const d=new Date();
+    d.setDate(d.getDate()-i);
+    days.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+  }
   return days;
 }
 
 function toast(msg){
-  const t=document.createElement('div');t.className='toast';t.textContent=msg;
-  document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+  const t=document.createElement('div');
+  t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
 }
 
-// ─── RENDER ───────────────────────────────────────────────────────────────────
 function render(){
-  if(screen==='login')renderLogin();
-  else if(screen==='worker')renderWorker();
-  else if(screen==='admin')renderAdmin();
+  if(screen==='login') renderLogin();
+  else if(screen==='worker') renderWorker();
+  else if(screen==='admin') renderAdmin();
 }
 
 function renderLogin(){
@@ -144,19 +189,22 @@ function filterWorkers(val){
   const matches=workers.filter(w=>w.name.toLowerCase().includes(val.toLowerCase()));
   if(!matches.length){box.style.display='none';return;}
   box.style.display='block';
-  box.innerHTML=matches.map(w=>`
-    <div class="suggest-item" onclick="selectWorker('${w.name.replace(/'/g,"\\'")}')">
+  box.innerHTML=matches.slice(0,5).map(w=>`
+    <div class="suggest-item" onclick="selectWorker(${w.id})">
       <div class="avatar" style="background:${gc(w.id)};width:32px;height:32px;font-size:12px">${gi(w.name)}</div>
-      <span>${w.name}</span>
+      <span>${w.name} <span style="color:#94a3b8;font-size:12px">${w.position||''}</span></span>
     </div>`).join('');
 }
 
-function selectWorker(name){
-  document.getElementById('nameInput').value=name;
+function selectWorker(id){
+  const w=workers.find(x=>x.id==id);
+  document.getElementById('nameInput').value=w.name;
   document.getElementById('suggestions').style.display='none';
+  currentWorker=w;
 }
 
 function loginWorker(){
+  if(currentWorker){screen='worker';render();return;}
   const val=document.getElementById('nameInput').value.trim();
   if(!val){toast('⚠️ Ismingizni kiriting!');return;}
   const w=workers.find(x=>x.name.toLowerCase()===val.toLowerCase());
@@ -166,17 +214,16 @@ function loginWorker(){
 
 function renderWorker(){
   const w=currentWorker;
-  const td=today();
-  const st=getStatus(w.id,td);
+  const td=getTodayDate();
+  const st=getStatus(w.id);
   const todayAtt=attendance.filter(a=>a.worker_id==w.id&&a.date===td);
   const hrs=calcHours(w.id,td);
-  const tz=tzNow();
-  const monthDays=getMonthDates(tz.getUTCFullYear(),tz.getUTCMonth()+1);
+  const monthDays=getMonthDates();
   const monthDayCount=[...new Set(attendance.filter(a=>a.worker_id==w.id&&monthDays.includes(a.date)).map(a=>a.date))].length;
-  const days=[];for(let i=6;i>=0;i--){const d=new Date(Date.now()+5*3600000-i*86400000);days.push(d.toISOString().slice(0,10));}
+  const last7=getLast7Days();
 
   document.getElementById('app').innerHTML=`
-  <div class="header" style="background:linear-gradient(135deg,${gc(w.id)},${gc(w.id)}cc)">
+  <div class="header" style="background:linear-gradient(135deg,${gc(w.id)},${gc(w.id)}bb)">
     <div class="sub">${nowStr()}</div>
     <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
       <div class="avatar" style="background:rgba(255,255,255,.25);width:48px;height:48px;font-size:18px">${gi(w.name)}</div>
@@ -191,33 +238,38 @@ function renderWorker(){
       <div class="stat-row">
         <div class="stat-box"><div class="v" style="color:${gc(w.id)}">${hrs.toFixed(1)}</div><div class="l">Bugun (soat)</div></div>
         <div class="stat-box"><div class="v" style="color:#22c55e">${monthDayCount}</div><div class="l">Bu oy (kun)</div></div>
-        <div class="stat-box"><div class="v" style="color:#f59e0b">${st==='in'?'🟢':'⚪'}</div><div class="l">${st==='in'?'Ichkarida':'Tashqarida'}</div></div>
+        <div class="stat-box"><div class="v">${st==='in'?'🟢':'⚪'}</div><div class="l">${st==='in'?'Ichkarida':'Tashqarida'}</div></div>
       </div>
-      <label class="label" style="margin-top:4px">IZOH (ixtiyoriy)</label>
+      <label class="label">IZOH (ixtiyoriy)</label>
       <input class="inp" id="noteInp" placeholder="Masalan: Kech qoldim, sabab...">
-      <button class="btn btn-green" onclick="mark(${w.id},'keldi')" ${st==='in'?'disabled':''}>🟢 Keldim</button>
-      <button class="btn btn-red" onclick="mark(${w.id},'ketti')" ${st==='out'?'disabled':''}>🔴 Ketdim</button>
+      <button class="btn btn-green" id="keldiBtn" onclick="mark(${w.id},'keldi')" ${st==='in'?'disabled':''}>🟢 Keldim</button>
+      <button class="btn btn-red" id="ketdiBtn" onclick="mark(${w.id},'ketti')" ${st==='out'?'disabled':''}>🔴 Ketdim</button>
     </div>
+
     <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:8px">📋 Bugungi yozuvlar</div>
     <div class="card">
       ${todayAtt.length===0?'<div style="text-align:center;padding:16px;color:#94a3b8;font-size:13px">Bugun hali yozuv yo\'q</div>':''}
       ${todayAtt.map(a=>`
         <div class="att-row">
           <div style="font-size:20px">${a.type==='keldi'?'🟢':'🔴'}</div>
-          <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#1e293b">${a.type==='keldi'?'Keldi':'Ketti'}</div>${a.note?`<div style="font-size:11px;color:#94a3b8">${a.note}</div>`:''}</div>
-          <div style="font-size:15px;font-weight:900;color:${a.type==='keldi'?'#16a34a':'#dc2626'}">${fmtTime(a.time)}</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:#1e293b">${a.type==='keldi'?'Keldi':'Ketti'}</div>
+            ${a.note?`<div style="font-size:11px;color:#94a3b8">${a.note}</div>`:''}
+          </div>
+          <div style="font-size:15px;font-weight:900;color:${a.type==='keldi'?'#16a34a':'#dc2626'}">${showTime(a.time)}</div>
         </div>`).join('')}
     </div>
+
     <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:8px">📅 So'nggi 7 kun</div>
     <div class="card">
-      ${days.reverse().map(d=>{
+      ${last7.map(d=>{
         const dayAtt=attendance.filter(a=>a.worker_id==w.id&&a.date===d);
         const h=calcHours(w.id,d);
         return`<div class="att-row">
-          <div style="font-size:12px;font-weight:700;color:#64748b;width:60px">${fmtDate(d)}</div>
+          <div style="font-size:12px;font-weight:700;color:#64748b;width:60px">${showDate(d)}</div>
           <div style="flex:1">
             ${dayAtt.length===0?'<span style="color:#cbd5e1;font-size:12px">Kelmagan</span>':''}
-            ${[...dayAtt].reverse().map(a=>`<span style="background:${a.type==='keldi'?'#f0fdf4':'#fff1f2'};color:${a.type==='keldi'?'#16a34a':'#dc2626'};border-radius:6px;padding:2px 6px;font-size:11px;font-weight:700;margin-right:3px">${a.type==='keldi'?'▲':'▼'}${fmtTime(a.time)}</span>`).join('')}
+            ${dayAtt.map(a=>`<span style="background:${a.type==='keldi'?'#f0fdf4':'#fff1f2'};color:${a.type==='keldi'?'#16a34a':'#dc2626'};border-radius:6px;padding:2px 6px;font-size:11px;font-weight:700;margin-right:3px">${a.type==='keldi'?'▲':'▼'}${showTime(a.time)}</span>`).join('')}
           </div>
           ${h>0?`<div style="font-size:12px;font-weight:800;color:#6366f1">${h.toFixed(1)}s</div>`:''}
         </div>`;
@@ -228,14 +280,13 @@ function renderWorker(){
 }
 
 function renderAdmin(){
-  const tz=tzNow();
-  const year=tz.getUTCFullYear(),month=tz.getUTCMonth()+1;
-  const monthDays=getMonthDates(year,month);
-  const td=today();
+  const td=getTodayDate();
+  const monthDays=getMonthDates();
 
   if(adminTab==='workers'){
-    const presentNow=workers.filter(w=>getStatus(w.id,td)==='in').length;
+    const presentNow=workers.filter(w=>getStatus(w.id)==='in').length;
     const todayW=[...new Set(attendance.filter(a=>a.date===td).map(a=>a.worker_id))].length;
+
     document.getElementById('app').innerHTML=`
     <div class="header" style="background:linear-gradient(135deg,#0f172a,#1e3a5f)">
       <div class="sub">${nowStr()}</div><h1>👨‍💼 Admin Panel</h1>
@@ -251,40 +302,47 @@ function renderAdmin(){
         <div class="stat-box"><div class="v" style="color:#22c55e">${presentNow}</div><div class="l">🟢 Ichkarida</div></div>
         <div class="stat-box"><div class="v" style="color:#f59e0b">${todayW}</div><div class="l">Bugun keldi</div></div>
       </div>
+
+      <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:8px">🟢 Hozir ishda</div>
+      <div class="card" style="padding:10px;margin-bottom:14px">
+        ${workers.filter(w=>getStatus(w.id)==='in').length===0?'<div style="text-align:center;padding:10px;color:#94a3b8;font-size:13px">Hozir hech kim ishda emas</div>':''}
+        ${workers.filter(w=>getStatus(w.id)==='in').map(w=>`
+          <div class="att-row">
+            <div class="avatar" style="background:${gc(w.id)};width:32px;height:32px;font-size:12px">${gi(w.name)}</div>
+            <div style="flex:1;padding-left:8px;font-size:13px;font-weight:700;color:#1e293b">${w.name}</div>
+            <div style="font-size:11px;color:#22c55e;font-weight:700">${calcHours(w.id,td).toFixed(1)} soat</div>
+          </div>`).join('')}
+      </div>
+
+      <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:8px">👥 Barcha ishchilar</div>
       ${workers.map(w=>{
-        const st=getStatus(w.id,td);
+        const st=getStatus(w.id);
         const hrs=calcHours(w.id,td);
         const mdays=[...new Set(attendance.filter(a=>a.worker_id==w.id&&monthDays.includes(a.date)).map(a=>a.date))].length;
         return`<div class="card" style="border-left:4px solid ${gc(w.id)}">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
             <div class="avatar" style="background:${gc(w.id)};width:40px;height:40px">${gi(w.name)}</div>
-            <div style="flex:1"><div style="font-size:14px;font-weight:800;color:#1e293b">${w.name}</div><div style="font-size:11px;color:#94a3b8">${w.position||'Ishchi'}</div></div>
-            <div class="${st==='in'?'status-in':'status-out'}">${st==='in'?'🟢 Ichkarida':'⚪ Tashqarida'}</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:800;color:#1e293b">${w.name}</div>
+              <div style="font-size:11px;color:#94a3b8">${w.position||'Ishchi'}${w.phone?' · '+w.phone:''}</div>
+            </div>
+            <div style="${st==='in'?'background:#f0fdf4;color:#16a34a':'background:#f1f5f9;color:#94a3b8'};border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">${st==='in'?'🟢 Ichkarida':'⚪ Tashqarida'}</div>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
             <span style="background:#f5f3ff;color:#6366f1;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700">Bugun: ${hrs.toFixed(1)} soat</span>
             <span style="background:#eff6ff;color:#2563eb;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700">Bu oy: ${mdays} kun</span>
-            <button onclick="editWorker(${w.id})" style="background:none;border:none;color:#93c5fd;cursor:pointer;font-size:13px">✏️</button>
-            <button onclick="deleteWorker(${w.id})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:13px">🗑</button>
+            <button onclick="editWorker(${w.id})" style="background:none;border:none;color:#93c5fd;cursor:pointer;font-size:14px;margin-left:auto">✏️</button>
+            <button onclick="deleteWorker(${w.id})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:14px">🗑</button>
           </div>
         </div>`;
       }).join('')}
-      <div style="font-size:13px;font-weight:900;color:#1e293b;margin:16px 0 8px">🟢 Hozir ishda</div>
-      <div class="card" style="padding:10px">
-        ${workers.filter(w=>getStatus(w.id,td)==='in').length===0?'<div style="text-align:center;padding:10px;color:#94a3b8;font-size:13px">Hozir hech kim ishda emas</div>':''}
-        ${workers.filter(w=>getStatus(w.id,td)==='in').map(w=>`
-          <div class="att-row">
-            <div class="avatar" style="background:${gc(w.id)};width:32px;height:32px;font-size:12px">${gi(w.name)}</div>
-            <div style="flex:1;padding-left:8px;font-size:13px;font-weight:700;color:#1e293b">${w.name}</div>
-            <div style="font-size:11px;color:#22c55e;font-weight:700">🟢 Ichkarida</div>
-          </div>`).join('')}
-      </div>
       <button class="btn btn-outline" onclick="showAddWorker()">+ Yangi ishchi qo'shish</button>
       <button class="btn btn-gray" style="font-size:13px;padding:11px" onclick="screen='login';render()">← Chiqish</button>
     </div>`;
   }
 
   else if(adminTab==='report'){
+    const now=new Date();
     document.getElementById('app').innerHTML=`
     <div class="header" style="background:linear-gradient(135deg,#0f172a,#1e3a5f)">
       <div class="sub">${nowStr()}</div><h1>📊 Oylik Hisobot</h1>
@@ -296,7 +354,7 @@ function renderAdmin(){
     </div>
     <div style="padding:16px">
       <div class="card">
-        <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:12px">📅 ${year} yil, ${month}-oy</div>
+        <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:12px">📅 ${now.getFullYear()} yil, ${now.getMonth()+1}-oy</div>
         ${workers.map(w=>{
           const days=[...new Set(attendance.filter(a=>a.worker_id==w.id&&monthDays.includes(a.date)).map(a=>a.date))].length;
           const hrs=monthDays.reduce((s,d)=>s+calcHours(w.id,d),0);
@@ -334,12 +392,17 @@ function renderAdmin(){
     <div style="padding:16px">
       ${dates.length===0?'<div style="text-align:center;padding:40px;color:#94a3b8">Hali yozuv yo\'q</div>':''}
       ${dates.map(date=>`
-        <div class="day-label"><span>${fmtDate(date)}</span><hr><span style="color:#94a3b8">${grouped[date].length} ta</span></div>
+        <div style="font-size:11px;font-weight:900;color:#64748b;margin:12px 0 6px;display:flex;align-items:center;gap:6px">
+          <span>${showDate(date)}</span><hr style="flex:1;border:none;border-top:1px solid #e2e8f0"><span style="color:#94a3b8">${grouped[date].length} ta</span>
+        </div>
         ${grouped[date].map(a=>`
           <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-left:3px solid ${a.type==='keldi'?'#22c55e':'#ef4444'}">
             <div class="avatar" style="background:${gc(a.worker_id)};width:34px;height:34px;font-size:12px">${gi(a.worker_name)}</div>
-            <div style="flex:1"><div style="font-size:13px;font-weight:800;color:#1e293b">${a.worker_name}</div></div>
-            <div style="font-size:14px;font-weight:900;color:${a.type==='keldi'?'#16a34a':'#dc2626'}">${a.type==='keldi'?'🟢':'🔴'} ${fmtTime(a.time)}</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:800;color:#1e293b">${a.worker_name}</div>
+              ${a.note?`<div style="font-size:11px;color:#94a3b8">${a.note}</div>`:''}
+            </div>
+            <div style="font-size:14px;font-weight:900;color:${a.type==='keldi'?'#16a34a':'#dc2626'}">${a.type==='keldi'?'🟢':'🔴'} ${showTime(a.time)}</div>
           </div>`).join('')}`).join('')}
       <button class="btn btn-gray" style="font-size:13px;padding:11px;margin-top:8px" onclick="screen='login';render()">← Chiqish</button>
     </div>`;
@@ -354,14 +417,23 @@ function openAdmin(){
 
 async function mark(wid,type){
   const w=workers.find(x=>x.id==wid);
-  // Toshkent vaqtini UTC sifatida saqlaymiz (server UTC da saqlaydi, biz +5 qo'shib ko'rsatamiz)
-  const n=new Date(Date.now()+5*3600000);
-  const tzTime=n.toISOString().replace('Z','');
   const note=document.getElementById('noteInp')?document.getElementById('noteInp').value:'';
-  await sb.from('attendance').insert({worker_id:wid,worker_name:w.name,type,date:today(),time:tzTime,note});
+  const td=getTodayDate();
+  const tm=getNowTime();
+  const btn=document.getElementById(type==='keldi'?'keldiBtn':'ketdiBtn');
+  if(btn){btn.disabled=true;btn.textContent='Saqlanmoqda...';}
+  await sb.from('attendance').insert({
+    worker_id:wid,
+    worker_name:w.name,
+    type,
+    date:td,
+    time:tm,
+    note:note
+  });
   await load();
   toast(type==='keldi'?`✅ ${w.name} keldi!`:`👋 ${w.name} ketti!`);
-  currentWorker=workers.find(x=>x.id==wid);render();
+  currentWorker=workers.find(x=>x.id==wid);
+  render();
 }
 
 function editWorker(id){
@@ -381,12 +453,19 @@ function editWorker(id){
       </div>
     </div>`);
 }
+
 async function saveEditWorker(id){
-  const btn=document.getElementById('editBtn');btn.disabled=true;btn.textContent='Saqlanmoqda...';
-  await sb.from('workers').update({position:document.getElementById('ePos').value,phone:document.getElementById('ePhone').value}).eq('id',id);
-  await load();document.getElementById('editModal').remove();
+  const btn=document.getElementById('editBtn');
+  btn.disabled=true;btn.textContent='Saqlanmoqda...';
+  await sb.from('workers').update({
+    position:document.getElementById('ePos').value,
+    phone:document.getElementById('ePhone').value
+  }).eq('id',id);
+  await load();
+  document.getElementById('editModal').remove();
   toast('✅ Saqlandi!');render();
 }
+
 function showAddWorker(){
   document.getElementById('app').insertAdjacentHTML('beforeend',`
     <div class="modal" id="addModal">
@@ -396,7 +475,7 @@ function showAddWorker(){
         <input class="inp" id="wName" placeholder="Masalan: Aliyev Jasur">
         <label class="label">LAVOZIM</label>
         <input class="inp" id="wPos" placeholder="Masalan: Ofitsiant">
-        <label class="label">TELEFON RAQAM</label>
+        <label class="label">TELEFON</label>
         <input class="inp" id="wPhone" placeholder="+998 90 123 45 67">
         <div style="display:flex;gap:10px">
           <button class="btn btn-gray" style="margin-bottom:0" onclick="document.getElementById('addModal').remove()">Bekor</button>
@@ -409,9 +488,15 @@ function showAddWorker(){
 async function addWorker(){
   const name=document.getElementById('wName').value.trim();
   if(!name){toast('⚠️ Ism kiriting!');return;}
-  const btn=document.getElementById('addBtn');btn.disabled=true;btn.textContent='Saqlanmoqda...';
-  await sb.from('workers').insert({name,position:document.getElementById('wPos').value,phone:document.getElementById('wPhone').value});
-  await load();document.getElementById('addModal').remove();
+  const btn=document.getElementById('addBtn');
+  btn.disabled=true;btn.textContent='Saqlanmoqda...';
+  await sb.from('workers').insert({
+    name,
+    position:document.getElementById('wPos').value,
+    phone:document.getElementById('wPhone').value
+  });
+  await load();
+  document.getElementById('addModal').remove();
   toast('✅ Ishchi qo\'shildi!');render();
 }
 
@@ -423,18 +508,19 @@ async function deleteWorker(id){
 }
 
 function downloadExcel(){
-  const tz=tzNow();
-  const year=tz.getUTCFullYear(),month=tz.getUTCMonth()+1;
-  const monthDays=getMonthDates(year,month);
-  let csv='Ism,Lavozim,Jami kun,Jami soat\n';
+  const now=new Date();
+  const monthDays=getMonthDates();
+  let csv='Ism,Lavozim,Telefon,Jami kun,Jami soat\n';
   workers.forEach(w=>{
     const days=[...new Set(attendance.filter(a=>a.worker_id==w.id&&monthDays.includes(a.date)).map(a=>a.date))].length;
     const hrs=monthDays.reduce((s,d)=>s+calcHours(w.id,d),0);
-    csv+=`"${w.name}","${w.position||''}",${days},${hrs.toFixed(2)}\n`;
+    csv+=`"${w.name}","${w.position||''}","${w.phone||''}",${days},${hrs.toFixed(2)}\n`;
   });
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download=`Davomat_${year}_${month}.csv`;a.click();
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`Davomat_${now.getFullYear()}_${now.getMonth()+1}.csv`;
+  a.click();
   toast('📥 Fayl yuklab olindi!');
 }
 
